@@ -32,7 +32,7 @@ export const Register: React.FC = () => {
       const response = await authApi.register(formData);
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      showSuccess('Welcome to AuraFIT ! 🎊');
+      showSuccess('Welcome to FitFlow Gym! 🎊');
       navigate('/dashboard');
     } catch (err: any) {
       showError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -101,7 +101,7 @@ export const Register: React.FC = () => {
                 animate={{ y: 0, opacity: 1 }}
               >
                 <Dumbbell className="w-10 h-10" />
-                <h1 className="text-3xl font-bold">AuraFIT</h1>
+                <h1 className="text-3xl font-bold">FitFlow Gym</h1>
               </motion.div>
               <motion.p
                 className="text-center text-red-50"
@@ -318,22 +318,68 @@ export const Register: React.FC = () => {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          value={formData.name || ''}
+                          onChange={handleChange}
+                          className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
+                          placeholder="Your full name"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Specialization
+                      </label>
+                      <div className="relative">
+                        <Award className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          name="specialization"
+                          required
+                          value={formData.specialization || ''}
+                          onChange={handleChange}
+                          className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
+                          placeholder="e.g., Strength Training, Yoga, CrossFit"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {formData.role === 'admin' && (
+                  <motion.div
+                    key="admin-fields"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
                   >
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Specialization
+                      Full Name
                     </label>
                     <div className="relative">
-                      <Award className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="text"
-                        name="specialization"
-                        required
-                        value={formData.specialization || ''}
+                        name="name"
+                        value={formData.name || ''}
                         onChange={handleChange}
                         className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
-                        placeholder="e.g., Strength Training, Yoga, CrossFit"
+                        placeholder="Your full name (optional)"
                       />
                     </div>
+                    <p className="text-xs text-gray-500 mt-1">Optional for admin accounts</p>
                   </motion.div>
                 )}
               </AnimatePresence>
