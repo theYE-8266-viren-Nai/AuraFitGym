@@ -20,6 +20,8 @@ export const PaymentsManagement: React.FC = () => {
   const { mutate: createPayment, isLoading: isCreating } = useMutation(paymentsApi.create);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const [formData, setFormData] = useState<CreatePaymentData>({
@@ -56,7 +58,9 @@ export const PaymentsManagement: React.FC = () => {
 
   const handleGenerateReceipt = async (paymentId: number) => {
     try {
-      await paymentsApi.generateReceipt(paymentId);
+      const receipt = await paymentsApi.generateReceipt(paymentId);
+      setSelectedReceipt(receipt);
+      setShowReceiptModal(true);
       showSuccess('Receipt generated successfully! 🧾');
     } catch (error) {
       showError('Failed to generate receipt');
@@ -406,6 +410,66 @@ export const PaymentsManagement: React.FC = () => {
             </motion.button>
           </div>
         </form>
+      </Modal>
+
+      {/* Receipt Modal */}
+      <Modal
+        isOpen={showReceiptModal}
+        onClose={() => setShowReceiptModal(false)}
+        title="🧾 Payment Receipt"
+      >
+        {selectedReceipt && (
+          <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-6 rounded-xl border-2 border-red-200">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-red-800 uppercase">Official Receipt</h3>
+              <p className="text-sm text-red-600 font-semibold">#{selectedReceipt.receipt_number}</p>
+            </div>
+
+            <div className="space-y-3 border-t-2 border-b-2 border-dashed border-red-300 py-4">
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-semibold text-sm uppercase">Member:</span>
+                <span className="text-red-800 font-bold">{selectedReceipt.member_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-semibold text-sm uppercase">Date:</span>
+                <span className="text-red-800 font-bold">{selectedReceipt.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-semibold text-sm uppercase">Amount:</span>
+                <span className="text-2xl font-bold text-green-600">${selectedReceipt.amount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-semibold text-sm uppercase">Method:</span>
+                <span className="text-red-800 font-bold">{selectedReceipt.method}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-semibold text-sm uppercase">Status:</span>
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full font-bold text-xs uppercase">
+                  {selectedReceipt.status}
+                </span>
+              </div>
+              {selectedReceipt.membership_type && selectedReceipt.membership_type !== 'N/A' && (
+                <div className="flex justify-between">
+                  <span className="text-red-800/60 font-semibold text-sm uppercase">Membership:</span>
+                  <span className="text-red-800 font-bold">{selectedReceipt.membership_type}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="text-center mt-6 text-xs text-red-600/60 italic">
+              Thank you for your payment! Wishing you prosperity! 🧧
+            </div>
+
+            <motion.button
+              onClick={() => window.print()}
+              className="w-full mt-4 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold uppercase shadow-lg hover:shadow-xl transition-all"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Print Receipt
+            </motion.button>
+          </div>
+        )}
       </Modal>
     </div>
   );

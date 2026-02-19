@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion} from 'framer-motion';
+import { motion } from 'framer-motion';
 import { CreditCard, DollarSign, CheckCircle, AlertCircle, Receipt, Calendar, Wallet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useApi, useMutation } from '../hooks/useApi';
@@ -24,19 +24,12 @@ export const MemberPayment: React.FC = () => {
   const { mutate: makePayment, isLoading: isProcessing } = useMutation(paymentsApi.create);
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [formData, setFormData] = useState<Omit<CreatePaymentData, 'member_id'>>({
     amount: 0,
     method: 'Credit Card',
   });
-
-  // const paymentMethods = [
-  //   { value: 'Credit Card', icon: '💳', color: 'from-red-600 to-red-800' },
-  //   { value: 'Debit Card', icon: '💳', color: 'from-red-700 to-orange-800' },
-  //   { value: 'Bank Transfer', icon: '🏦', color: 'from-amber-600 to-yellow-700' },
-  //   { value: 'PayPal', icon: '🅿️', color: 'from-red-500 to-orange-500' },
-  //   { value: 'Mobile Payment', icon: '📱', color: 'from-yellow-500 to-red-500' },
-  //   { value: 'Cash', icon: '💵', color: 'from-emerald-600 to-green-700' },
-  // ];
 
   const membershipPlans = [
     { name: 'Monthly', duration: 30, price: 50, icon: '🧧' },
@@ -64,6 +57,17 @@ export const MemberPayment: React.FC = () => {
       refetchStatus();
     } catch (error: any) {
       showError(error.response?.data?.message || 'Payment failed');
+    }
+  };
+
+  const handleViewReceipt = async (paymentId: number) => {
+    try {
+      const receipt = await paymentsApi.generateReceipt(paymentId);
+      setSelectedReceipt(receipt);
+      setShowReceiptModal(true);
+      showSuccess(`Receipt generated! 🧾`);
+    } catch (error) {
+      showError('Failed to generate receipt');
     }
   };
 
@@ -204,12 +208,15 @@ export const MemberPayment: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={async () => { /* Logic */ }}
+                <motion.button
+                  onClick={() => handleViewReceipt(payment.id)}
                   className="p-2 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all border border-red-100"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  title="View Receipt"
                 >
                   <Receipt className="w-5 h-5" />
-                </button>
+                </motion.button>
               </motion.div>
             ))}
           </div>
@@ -218,7 +225,7 @@ export const MemberPayment: React.FC = () => {
         )}
       </motion.div>
 
-      {/* Modal - Themed */}
+      {/* Payment Modal */}
       <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="🧧 New Transaction" size="lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -262,12 +269,68 @@ export const MemberPayment: React.FC = () => {
             <button
               type="submit"
               disabled={isProcessing || formData.amount <= 0}
-              className="flex-[2] py-4 bg-red-600 text-amber-100 font-black rounded-xl shadow-lg shadow-red-200 border-b-4 border-red-800 uppercase tracking-widest"
+              className="flex-[2] py-4 bg-red-600 text-amber-100 font-black rounded-xl shadow-lg shadow-red-200 border-b-4 border-red-800 uppercase tracking-widest disabled:opacity-50"
             >
               {isProcessing ? 'Processing...' : `Confirm $${formData.amount}`}
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Receipt Modal */}
+      <Modal isOpen={showReceiptModal} onClose={() => setShowReceiptModal(false)} title="🧾 Payment Receipt">
+        {selectedReceipt && (
+          <div className="bg-[#fffcf0] p-6 rounded-xl border-2 border-amber-200">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-black text-red-800 uppercase">Official Receipt</h3>
+              <p className="text-sm text-red-600 font-bold">#{selectedReceipt.receipt_number}</p>
+            </div>
+
+            <div className="space-y-3 border-t-2 border-b-2 border-dashed border-amber-300 py-4">
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-bold text-sm uppercase">Member:</span>
+                <span className="text-red-800 font-black">{selectedReceipt.member_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-bold text-sm uppercase">Date:</span>
+                <span className="text-red-800 font-black">{selectedReceipt.date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-bold text-sm uppercase">Amount:</span>
+                <span className="text-2xl font-black text-red-600">${selectedReceipt.amount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-bold text-sm uppercase">Method:</span>
+                <span className="text-red-800 font-black">{selectedReceipt.method}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-red-800/60 font-bold text-sm uppercase">Status:</span>
+                <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded font-black text-xs uppercase">
+                  {selectedReceipt.status}
+                </span>
+              </div>
+              {selectedReceipt.membership_type !== 'N/A' && (
+                <div className="flex justify-between">
+                  <span className="text-red-800/60 font-bold text-sm uppercase">Plan:</span>
+                  <span className="text-red-800 font-black">{selectedReceipt.membership_type}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="text-center mt-6 text-xs text-red-600/50 italic">
+              Thank you for your payment! May prosperity follow you. 🧧
+            </div>
+
+            <motion.button
+              onClick={() => window.print()}
+              className="w-full mt-4 py-3 bg-red-600 text-amber-100 rounded-lg font-black uppercase"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Print Receipt
+            </motion.button>
+          </div>
+        )}
       </Modal>
     </div>
   );
