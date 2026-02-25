@@ -20,39 +20,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load user and token from localStorage on mount
+    // ⭐ OPTIMIZED: Only load from localStorage, don't call API on every mount
     const storedToken = localStorage.getItem('auth_token');
     const storedUser = localStorage.getItem('user');
 
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to parse stored user:', error);
+        // Clear invalid data
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+      }
     }
 
     setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    // Fetch fresh user data if token exists
-    const fetchUser = async () => {
-      if (token) {
-        try {
-          const userData = await authApi.me();
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
-        } catch (error) {
-          console.error('Failed to fetch user:', error);
-          // Token might be invalid, clear auth state
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
-        }
-      }
-    };
-
-    fetchUser();
-  }, [token]);
+  }, []); // ⭐ Only run once on mount, not on token change!
 
   const login = async (email: string, password: string) => {
     try {
