@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard,  Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { CreditCard, Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { useApi, useMutation } from '../hooks/useApi';
 import { membershipsApi, CreateMembershipData, UpdateMembershipFormData } from '../services/membershipsApi';
 import { membersApi } from '../services/membersApi';
@@ -195,7 +195,7 @@ export const MembershipsManagement: React.FC = () => {
         {[
           { label: 'Active Memberships', value: activeCount, color: 'from-green-500 to-emerald-500', icon: CheckCircle },
           { label: 'Expired', value: expiredCount, color: 'from-red-500 to-orange-500', icon: XCircle },
-          { label: 'Total Revenue', value: `$${totalRevenue.toFixed(0)}`, color: 'from-yellow-500 to-amber-500', icon: CreditCard },
+          { label: 'Total Revenue', value: `${totalRevenue.toFixed(0)} Kyats`, color: 'from-yellow-500 to-amber-500', icon: CreditCard },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -255,7 +255,8 @@ export const MembershipsManagement: React.FC = () => {
 
                       <div className="text-center">
                         <p className="text-xs text-gray-500 mb-1">Fee</p>
-                        <p className="font-bold text-green-600 text-lg">${membership.fee}</p>
+                        <p className="font-bold text-green-600 text-lg">{membership.fee} Kyats
+                        </p>
                       </div>
 
                       <div className="text-center">
@@ -353,8 +354,8 @@ export const MembershipsManagement: React.FC = () => {
                   type="button"
                   onClick={() => selectMembershipType(type)}
                   className={`p-4 border-2 rounded-xl text-left transition-all ${createFormData.type === type.label
-                      ? 'border-red-500 bg-gradient-to-r from-red-50 to-orange-50 shadow-lg'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-red-500 bg-gradient-to-r from-red-50 to-orange-50 shadow-lg'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -364,7 +365,8 @@ export const MembershipsManagement: React.FC = () => {
                     <span className="font-semibold text-gray-900">{type.label}</span>
                   </div>
                   <div className="text-sm text-gray-600">{type.duration} days</div>
-                  <div className="text-xl font-bold text-red-600 mt-1">${type.fee}</div>
+                  <div className="text-xl font-bold text-red-600 mt-1">{type.fee} Kyats
+                  </div>
                 </motion.button>
               ))}
             </div>
@@ -401,7 +403,7 @@ export const MembershipsManagement: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fee ($)
+                Fee (Kyats)
               </label>
               <input
                 type="number"

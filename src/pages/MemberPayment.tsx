@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, DollarSign, CheckCircle, AlertCircle, Receipt, Calendar, Wallet } from 'lucide-react';
+import { CreditCard, Banknote, CheckCircle, AlertCircle, Receipt, Calendar, Wallet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useApi, useMutation } from '../hooks/useApi';
 import { paymentsApi, CreatePaymentData } from '../services/paymentsApi';
@@ -8,6 +8,7 @@ import { membershipsApi } from '../services/membershipsApi';
 import { Payment, MembershipStatusResponse } from '../types';
 import { Modal } from '../components/shared/Modal';
 import { useToast } from '../components/shared/Toast';
+import { clearCache } from '../lib/axios';
 
 export const MemberPayment: React.FC = () => {
   const { user } = useAuth();
@@ -31,11 +32,16 @@ export const MemberPayment: React.FC = () => {
     method: 'Credit Card',
   });
 
+  // Format number with commas for Kyats
+  const formatKyats = (amount: number) => {
+    return amount.toLocaleString('en-US');
+  };
+
   const membershipPlans = [
-    { name: 'Monthly', duration: 30, price: 50, icon: '🧧' },
-    { name: 'Quarterly', duration: 90, price: 135, icon: '🏮' },
-    { name: 'Semi-Annual', duration: 180, price: 255, icon: '🎆' },
-    { name: 'Annual', duration: 365, price: 480, icon: '🐉' },
+    { name: 'Monthly', duration: 30, price: 50000, icon: '🧧' },
+    { name: 'Quarterly', duration: 90, price: 135000, icon: '🏮' },
+    { name: 'Semi-Annual', duration: 180, price: 255000, icon: '🎆' },
+    { name: 'Annual', duration: 365, price: 480000, icon: '🐉' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,9 +56,10 @@ export const MemberPayment: React.FC = () => {
         member_id: user.member.id,
         ...formData,
       });
-      showSuccess('Payment successful! Happy New Year! 🏮');
+      showSuccess('Payment successful! 🏮');
       setShowPaymentModal(false);
       setFormData({ amount: 0, method: 'Credit Card' });
+      clearCache('/payments');
       refetchPayments();
       refetchStatus();
     } catch (error: any) {
@@ -91,7 +98,7 @@ export const MemberPayment: React.FC = () => {
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
-          <p className="text-red-800 font-bold tracking-widest">LOADING WEALTH...</p>
+          <p className="text-red-800 font-bold tracking-widest">LOADING...</p>
         </motion.div>
       </div>
     );
@@ -110,7 +117,7 @@ export const MemberPayment: React.FC = () => {
             <Wallet className="w-6 h-6 text-amber-200" />
           </div>
           <h1 className="text-3xl font-black text-red-800 tracking-tighter uppercase">
-            Wealth & Subscriptions
+            Payment & Subscriptions
           </h1>
         </div>
         <motion.button
@@ -143,12 +150,12 @@ export const MemberPayment: React.FC = () => {
             </div>
             <div>
               <h2 className={`text-2xl font-black ${membershipStatus?.has_active_membership ? 'text-amber-300' : 'text-red-800'}`}>
-                {membershipStatus?.has_active_membership ? 'LUCKY & ACTIVE ✅' : 'MEMBERSHIP EXPIRED 🏮'}
+                {membershipStatus?.has_active_membership ? 'ACTIVE MEMBERSHIP ✅' : 'MEMBERSHIP EXPIRED 🏮'}
               </h2>
               <p className={membershipStatus?.has_active_membership ? 'text-amber-100/80' : 'text-red-600/70'}>
                 {membershipStatus?.has_active_membership 
                   ? `Your ${membershipStatus.active_membership?.type} plan is valid until ${new Date(membershipStatus.active_membership?.end_date || '').toLocaleDateString()}`
-                  : 'Renew your subscription to invite prosperity and access the gym.'}
+                  : 'Renew your subscription to access the gym.'}
               </p>
             </div>
           </div>
@@ -158,9 +165,9 @@ export const MemberPayment: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[
-          { label: 'Total Contribution', value: `$${totalPaid.toFixed(2)}`, icon: DollarSign },
-          { label: 'Recent Transactions', value: thisMonthPayments.length, icon: Calendar },
-          { label: 'Historical Records', value: payments?.length || 0, icon: Receipt },
+          { label: 'Total Paid', value: `${formatKyats(totalPaid)} Ks`, icon: Banknote },
+          { label: 'This Month', value: thisMonthPayments.length, icon: Calendar },
+          { label: 'All Payments', value: payments?.length || 0, icon: Receipt },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -170,7 +177,7 @@ export const MemberPayment: React.FC = () => {
             transition={{ delay: 0.2 + index * 0.1 }}
           >
             <p className="text-xs font-black text-red-800/50 uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-3xl font-black text-red-700">{stat.value}</p>
+            <p className="text-2xl font-black text-red-700">{stat.value}</p>
           </motion.div>
         ))}
       </div>
@@ -183,7 +190,7 @@ export const MemberPayment: React.FC = () => {
         transition={{ delay: 0.5 }}
       >
         <h2 className="text-xl font-black text-red-800 mb-6 flex items-center gap-2 uppercase tracking-tighter">
-          <Receipt className="w-6 h-6" /> Transaction Log
+          <Receipt className="w-6 h-6" /> Payment History
         </h2>
         {payments && payments.length > 0 ? (
           <div className="space-y-4">
@@ -196,11 +203,11 @@ export const MemberPayment: React.FC = () => {
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center text-amber-200 font-bold shadow-md">
-                    <span className="text-xl font-black">$</span>
+                    <span className="text-lg font-black">Ks</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl font-black text-red-800">${payment.amount}</span>
+                      <span className="text-xl font-black text-red-800">{formatKyats(Number(payment.amount))} Kyats</span>
                       <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-black uppercase">{payment.status}</span>
                     </div>
                     <p className="text-xs font-bold text-red-800/40 uppercase tracking-tighter">
@@ -221,12 +228,12 @@ export const MemberPayment: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 opacity-30 italic text-red-900">No records found...</div>
+          <div className="text-center py-12 opacity-30 italic text-red-900">No payment records found...</div>
         )}
       </motion.div>
 
       {/* Payment Modal */}
-      <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="🧧 New Transaction" size="lg">
+      <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="🧧 New Payment" size="lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             {membershipPlans.map((plan) => (
@@ -240,21 +247,24 @@ export const MemberPayment: React.FC = () => {
               >
                 <div className="text-2xl mb-1">{plan.icon}</div>
                 <div className="font-black text-red-800 text-sm uppercase">{plan.name}</div>
-                <div className="text-2xl font-black text-red-600">${plan.price}</div>
+                <div className="text-lg font-black text-red-600">{formatKyats(plan.price)} Ks</div>
               </button>
             ))}
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-black text-red-800 uppercase">Amount</label>
+            <label className="text-xs font-black text-red-800 uppercase">Amount (Kyats)</label>
             <div className="relative">
               <input
                 type="number"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
                 className="w-full p-4 bg-red-50 border-2 border-amber-100 rounded-xl focus:border-red-600 outline-none font-black text-red-800 text-xl"
+                placeholder="50000"
+                min="0"
+                step="1"
               />
-              <DollarSign className="absolute right-4 top-4 text-red-300" />
+              <span className="absolute right-4 top-4 text-red-300 font-bold">Ks</span>
             </div>
           </div>
 
@@ -271,7 +281,7 @@ export const MemberPayment: React.FC = () => {
               disabled={isProcessing || formData.amount <= 0}
               className="flex-[2] py-4 bg-red-600 text-amber-100 font-black rounded-xl shadow-lg shadow-red-200 border-b-4 border-red-800 uppercase tracking-widest disabled:opacity-50"
             >
-              {isProcessing ? 'Processing...' : `Confirm $${formData.amount}`}
+              {isProcessing ? 'Processing...' : `Confirm ${formatKyats(formData.amount)} Ks`}
             </button>
           </div>
         </form>
@@ -297,7 +307,7 @@ export const MemberPayment: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-red-800/60 font-bold text-sm uppercase">Amount:</span>
-                <span className="text-2xl font-black text-red-600">${selectedReceipt.amount}</span>
+                <span className="text-2xl font-black text-red-600">{formatKyats(Number(selectedReceipt.amount))} Kyats</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-red-800/60 font-bold text-sm uppercase">Method:</span>
@@ -318,7 +328,7 @@ export const MemberPayment: React.FC = () => {
             </div>
 
             <div className="text-center mt-6 text-xs text-red-600/50 italic">
-              Thank you for your payment! May prosperity follow you. 🧧
+              Thank you for your payment! 🙏
             </div>
 
             <motion.button

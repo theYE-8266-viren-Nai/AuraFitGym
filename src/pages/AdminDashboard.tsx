@@ -114,7 +114,7 @@ export const AdminDashboard: React.FC = () => {
     },
     {
       title: 'Monthly Revenue',
-      value: `$${thisMonthRevenue.toFixed(2)}`,
+      value: `${thisMonthRevenue.toLocaleString()} Kyats`,
       icon: DollarSign,
       color: 'from-yellow-500 to-amber-500',
       bgColor: 'bg-yellow-50',
@@ -157,7 +157,7 @@ export const AdminDashboard: React.FC = () => {
       icon: DollarSign,
       color: 'from-yellow-500 to-amber-500',
       route: '/payments',
-      stats: `$${thisMonthRevenue.toFixed(2)} this month`,
+      stats: `${thisMonthRevenue.toLocaleString()} Kyats this month`,
     },
     {
       title: 'Attendance',
@@ -226,14 +226,11 @@ export const AdminDashboard: React.FC = () => {
                 <motion.div
                   className={`px-3 py-1 rounded-full text-xs font-bold ${
                     stat.changeType === 'positive' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-red-100 text-red-700'
                   }`}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: index * 0.1 + 0.3 }}
                 >
-                  {stat.change}
                 </motion.div>
               </div>
               <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
@@ -378,7 +375,9 @@ export const AdminDashboard: React.FC = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-green-600 text-lg">${payment.amount}</p>
+                    <p className="font-bold text-green-600 text-lg">
+                      {Number(payment.amount).toLocaleString()} Kyats
+                    </p>
                     <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
                       payment.status === 'completed' 
                         ? 'bg-green-100 text-green-800' 

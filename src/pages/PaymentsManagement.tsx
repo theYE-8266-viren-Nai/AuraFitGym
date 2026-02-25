@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, CreditCard, Receipt, Calendar, Filter, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Banknote, CreditCard, Receipt, Calendar, Filter, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { useApi, useMutation } from '../hooks/useApi';
 import { paymentsApi, CreatePaymentData } from '../services/paymentsApi';
 import { membersApi } from '../services/membersApi';
@@ -34,10 +34,15 @@ export const PaymentsManagement: React.FC = () => {
     { value: 'Credit Card', icon: '💳' },
     { value: 'Debit Card', icon: '💳' },
     { value: 'Bank Transfer', icon: '🏦' },
-    { value: 'PayPal', icon: '🅿️' },
-    { value: 'Mobile Payment', icon: '📱' },
+    { value: 'KBZ Pay', icon: '📱' },
+    { value: 'Wave Money', icon: '💰' },
     { value: 'Cash', icon: '💵' },
   ];
+
+  // Format number with commas for Kyats
+  const formatKyats = (amount: number) => {
+    return amount.toLocaleString('en-US');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +143,7 @@ export const PaymentsManagement: React.FC = () => {
       >
         <div className="flex items-center gap-3">
           <div className="p-3 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl shadow-lg">
-            <DollarSign className="w-6 h-6 text-white" />
+            <Banknote className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
             Payments Management
@@ -158,7 +163,7 @@ export const PaymentsManagement: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[
-          { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, color: 'from-green-500 to-emerald-500', icon: DollarSign },
+          { label: 'Total Revenue', value: `${formatKyats(totalRevenue)} Ks`, color: 'from-green-500 to-emerald-500', icon: Banknote },
           { label: 'Completed', value: completedCount, color: 'from-red-500 to-orange-500', icon: CheckCircle },
           { label: 'Pending', value: pendingCount, color: 'from-yellow-500 to-amber-500', icon: Clock },
         ].map((stat, index) => (
@@ -176,7 +181,7 @@ export const PaymentsManagement: React.FC = () => {
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-            <p className="text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+            <p className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
               {stat.value}
             </p>
           </motion.div>
@@ -235,11 +240,11 @@ export const PaymentsManagement: React.FC = () => {
                 >
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-4 flex-1">
-                      <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                        $
+                      <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                        Ks
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 text-lg">${payment.amount}</h3>
+                        <h3 className="font-bold text-gray-900 text-lg">{formatKyats(Number(payment.amount))} Kyats</h3>
                         <p className="text-sm text-gray-600">{payment.member?.name || 'Unknown Member'}</p>
                         <p className="text-xs text-gray-500">{payment.member?.user?.email}</p>
                       </div>
@@ -297,7 +302,7 @@ export const PaymentsManagement: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <DollarSign className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <Banknote className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 font-medium">No payments found</p>
               <p className="text-sm text-gray-400 mt-2">for the selected filter</p>
             </motion.div>
@@ -334,22 +339,25 @@ export const PaymentsManagement: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Amount ($)
+              Amount (Kyats)
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <DollarSign className="w-5 h-5 text-gray-400" />
+                <Banknote className="w-5 h-5 text-gray-400" />
               </div>
               <input
                 type="number"
                 required
                 min="0"
-                step="0.01"
+                step="1"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
                 className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
-                placeholder="0.00"
+                placeholder="0"
               />
+              <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                <span className="text-gray-500 text-sm">Ks</span>
+              </div>
             </div>
           </div>
 
@@ -381,7 +389,7 @@ export const PaymentsManagement: React.FC = () => {
           <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border-2 border-red-100">
             <div className="flex justify-between items-center mb-2">
               <span className="text-gray-700 font-medium">Total Amount:</span>
-              <span className="text-2xl font-bold text-red-600">${formData.amount.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-red-600">{formatKyats(formData.amount)} Kyats</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 text-sm">Payment Method:</span>
@@ -436,7 +444,7 @@ export const PaymentsManagement: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-red-800/60 font-semibold text-sm uppercase">Amount:</span>
-                <span className="text-2xl font-bold text-green-600">${selectedReceipt.amount}</span>
+                <span className="text-2xl font-bold text-green-600">{formatKyats(Number(selectedReceipt.amount))} Kyats</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-red-800/60 font-semibold text-sm uppercase">Method:</span>
@@ -457,7 +465,7 @@ export const PaymentsManagement: React.FC = () => {
             </div>
 
             <div className="text-center mt-6 text-xs text-red-600/60 italic">
-              Thank you for your payment! Wishing you prosperity! 🧧
+              Thank you for your payment! 🙏
             </div>
 
             <motion.button
