@@ -38,10 +38,10 @@ export const MembershipsManagement: React.FC = () => {
     status: 'active',
   });
   const membershipTypes = [
-    { label: 'Monthly', duration: 30, fee: 50, icon: '📅' },
-    { label: 'Quarterly (3 months)', duration: 90, fee: 135, icon: '📊' },
-    { label: 'Semi-Annual (6 months)', duration: 180, fee: 255, icon: '⭐' },
-    { label: 'Annual', duration: 365, fee: 480, icon: '🏆' },
+    { label: 'Monthly', duration: 30, fee: 50000, icon: '📅' },
+    { label: 'Quarterly (3 months)', duration: 90, fee: 140000, icon: '📊' },
+    { label: 'Semi-Annual (6 months)', duration: 180, fee: 275000, icon: '⭐' },
+    { label: 'Annual', duration: 365, fee: 550000, icon: '🏆' },
   ];
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
