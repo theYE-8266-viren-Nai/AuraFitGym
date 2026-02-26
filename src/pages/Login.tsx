@@ -169,18 +169,6 @@ export const Login: React.FC = () => {
               transition={{ delay: 0.8 }}
               className="grid grid-cols-3 gap-4"
             >
-              {[
-                { num: '5000+', label: 'Members' },
-                { num: '50+', label: 'Trainers' },
-                { num: '24/7', label: 'Access' },
-              ].map((stat, index) => (
-                <div key={index} className="text-center bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-md">
-                  <div className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-                    {stat.num}
-                  </div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
-                </div>
-              ))}
             </motion.div>
           </motion.div>
 
